@@ -33,14 +33,14 @@ export const saveImageFiles = async (
 		data.files = [];
 	}
 
-	const files = app.vault.getFiles().filter((file) => file.extension === "md");
+	const files = app.vault.getMarkdownFiles();
 
-	const fileSystemAdapter = app.vault.adapter as FileSystemAdapter;
+	const adapter = app.vault.adapter;
 
 	const resorceFolderName = `_${id}_${RESOURCE_FOLDER_NAME}`;
 
-	if (!(await fileSystemAdapter.exists(resorceFolderName))) {
-		fileSystemAdapter.mkdir(resorceFolderName);
+	if (!(await adapter.exists(resorceFolderName))) {
+		adapter.mkdir(resorceFolderName);
 	}
 
 	for (const file of files) {
@@ -49,14 +49,14 @@ export const saveImageFiles = async (
 			continue;
 		}
 
-		let fileContent = await fileSystemAdapter.read(file!.path);
+		let fileContent = await adapter.read(file!.path);
 
 		const currentFileFolderPath = `${resorceFolderName}/${encodeURIComponent(
 			Math.random().toString(36)
 		)}`;
 
-		if (!(await fileSystemAdapter.exists(currentFileFolderPath))) {
-			fileSystemAdapter.mkdir(currentFileFolderPath);
+		if (!(await adapter.exists(currentFileFolderPath))) {
+			adapter.mkdir(currentFileFolderPath);
 		}
 
 		// get image files
@@ -85,7 +85,7 @@ export const saveImageFiles = async (
 						}
 
 						fileContent = fileContent.replace(imageMatch, filePath);
-						await fileSystemAdapter.writeBinary(filePath, response.arrayBuffer);
+						await adapter.writeBinary(filePath, response.arrayBuffer);
 					}
 				} catch (error) {
 					console.log("access url error: " + imageMatch);
@@ -94,7 +94,7 @@ export const saveImageFiles = async (
 			}
 		}
 
-		await fileSystemAdapter.write(file!.path, fileContent);
+		await adapter.write(file!.path, fileContent);
 
 		data.files.push(file.name);
 	}
