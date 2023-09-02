@@ -6,6 +6,25 @@ const START_MESSAGE = "Media Sync Start!!";
 const PROCESS_MESSAGE = "Media Sync in Process!!";
 const END_MESSAGE = "Media Sync End!!";
 
+const getImageFilePrefix = (): string => {
+	const now = new Date();
+
+	const year = now.getFullYear();
+	const month = String(now.getMonth() + 1).padStart(2, "0"); // 月は0から始まるため+1
+	const day = String(now.getDate()).padStart(2, "0");
+	const hours = String(now.getHours()).padStart(2, "0");
+	const minutes = String(now.getMinutes()).padStart(2, "0");
+	const seconds = String(now.getSeconds()).padStart(2, "0");
+
+	return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+};
+
+const getRondomString = (): string => {
+	return Math.floor(Math.random() * 100000)
+		.toString()
+		.padStart(5, "0");
+};
+
 export const saveImageFiles = async (app: App, id: string, plugin: Plugin) => {
 	const startNotice = new Notice(START_MESSAGE, 0);
 	console.log(START_MESSAGE);
@@ -48,24 +67,20 @@ export const saveImageFiles = async (app: App, id: string, plugin: Plugin) => {
 		}
 
 		let fileContent = await adapter.read(file!.path);
+		const prefix = getImageFilePrefix();
 
-		const currentFileFolderPath = `${resorceFolderName}/${encodeURIComponent(
-			Math.random().toString(36)
-		)}`;
+		const currentFileFolderPath = `${resorceFolderName}/${prefix}`;
 
 		if (!(await adapter.exists(currentFileFolderPath))) {
 			adapter.mkdir(currentFileFolderPath);
 		}
 
-		// get image files
-		const imageMatches = fileContent.match(
-			/https?:\/\/([\w!\?/\-_=\.&%;:,])+/g
-		);
+		const urlMatches = fileContent.match(/https?:\/\/([\w!\?/\-_=\.&%;:,])+/g);
 
-		if (imageMatches) {
-			for (const imageMatch of imageMatches) {
+		if (urlMatches) {
+			for (const urlMatche of urlMatches) {
 				try {
-					const response = await requestUrl(imageMatch);
+					const response = await requestUrl(urlMatche);
 					const contentType = response.headers["content-type"];
 
 					if (contentType.startsWith("image")) {
@@ -74,19 +89,16 @@ export const saveImageFiles = async (app: App, id: string, plugin: Plugin) => {
 							(ext) => extension.toLowerCase() === ext
 						);
 
-						// ? encoding is not recognized as a file.
-						let filePath = `${currentFileFolderPath}/${encodeURIComponent(
-							imageMatch.contains("?") ? imageMatch.split("?")[0] : imageMatch
-						)}`;
+						let filePath = `${currentFileFolderPath}/${prefix}_${getRondomString()}`;
 						if (isAllowExtension) {
 							filePath = `${filePath}.${extension}`;
 						}
 
-						fileContent = fileContent.replace(imageMatch, filePath);
+						fileContent = fileContent.replace(urlMatche, filePath);
 						await adapter.writeBinary(filePath, response.arrayBuffer);
 					}
 				} catch (error) {
-					console.log("access url error: " + imageMatch);
+					console.log("access url error: " + urlMatche);
 					console.log(error);
 				}
 			}
