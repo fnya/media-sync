@@ -92,6 +92,17 @@ export const saveImageFiles = async (app: App, id: string, plugin: Plugin) => {
 						let filePath = `${currentFileFolderPath}/${prefix}_${getRondomString()}`;
 						if (isAllowExtension) {
 							filePath = `${filePath}.${extension}`;
+						} else {
+							const realUrl = urlMatche.split("?")[0];
+							const realExtention = ALLOW_FILE_EXTENSIONS.find((ext) =>
+								realUrl.toLowerCase().endsWith(ext)
+							);
+
+							if (realExtention) {
+								filePath = `${filePath}.${realExtention}`;
+							} else {
+								continue;
+							}
 						}
 
 						fileContent = fileContent.replace(urlMatche, filePath);
