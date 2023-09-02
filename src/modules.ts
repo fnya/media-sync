@@ -1,19 +1,17 @@
-import { App, Notice, FileSystemAdapter, requestUrl, Plugin } from "obsidian";
+import { App, Notice, requestUrl, Plugin } from "obsidian";
 
 const RESOURCE_FOLDER_NAME = "resources";
 const ALLOW_FILE_EXTENSIONS = ["png", "jpg", "jpeg", "gif"];
 const START_MESSAGE = "Media Sync Start!!";
+const PROCESS_MESSAGE = "Media Sync in Process!!";
 const END_MESSAGE = "Media Sync End!!";
 
-export const saveImageFiles = async (
-	app: App,
-	id: string,
-	plugin: Plugin,
-	statusBatItem: HTMLElement
-) => {
-	new Notice(START_MESSAGE);
-	statusBatItem.setText(START_MESSAGE);
+export const saveImageFiles = async (app: App, id: string, plugin: Plugin) => {
+	const startNotice = new Notice(START_MESSAGE, 0);
 	console.log(START_MESSAGE);
+
+	const processNotice = new Notice(PROCESS_MESSAGE, 0);
+	console.log(PROCESS_MESSAGE);
 
 	let data: any;
 
@@ -108,7 +106,14 @@ export const saveImageFiles = async (
 		console.log(error);
 	}
 
+	const endNotice = new Notice(END_MESSAGE, 0);
+
+	// sleep 2 seconds
+	await new Promise((r) => setTimeout(r, 2000));
+
+	startNotice.hide();
+	processNotice.hide();
+	endNotice.hide();
+
 	console.log(END_MESSAGE);
-	new Notice(END_MESSAGE);
-	statusBatItem.setText(END_MESSAGE);
 };
