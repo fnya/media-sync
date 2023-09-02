@@ -5,7 +5,7 @@ export default class MediaSyncPlugin extends Plugin {
 	statusBarItemEl?: HTMLElement;
 
 	async onload() {
-		// Initialize statusBatItem
+		// Initialize statusBarItem
 		this.statusBarItemEl = this.addStatusBarItem();
 		this.statusBarItemEl.setText("");
 
