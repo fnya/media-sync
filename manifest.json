@@ -6,5 +6,5 @@
 	"description": "Downloads images from the image URLs in documents and displays the content.",
 	"author": "fnya",
 	"authorUrl": "https://github.com/fnya",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }
