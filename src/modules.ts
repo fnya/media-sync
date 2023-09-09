@@ -60,7 +60,9 @@ const getResorceFolderName = (
 	let resourceFolderName: string | undefined;
 
 	if (settings.setting.saveDirectory === SaveDirectory.AttachmentFolderPath) {
-		resourceFolderName = vault.getConfig(SaveDirectory.AttachmentFolderPath);
+		resourceFolderName = (vault as unknown as any).getConfig(
+			SaveDirectory.AttachmentFolderPath
+		);
 	} else if (settings.setting.saveDirectory === SaveDirectory.UserDefined) {
 		resourceFolderName = settings.setting.resourceFolderName;
 	}
