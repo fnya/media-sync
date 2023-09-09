@@ -87,6 +87,7 @@ const downloadImages = async (
 		(file) => !data?.files?.some((f: any) => f === file.name)
 	)?.length;
 	let currentCount = 1;
+	const errorUrls: string[] = [];
 
 	for (const file of files) {
 		const isSkip = data?.files?.some((f: any) => f === file.name);
@@ -111,6 +112,10 @@ const downloadImages = async (
 
 		if (urlMatches) {
 			for (const urlMatche of urlMatches) {
+				if (errorUrls.some((url) => url === urlMatche)) {
+					continue;
+				}
+
 				try {
 					const response = await requestUrl(urlMatche);
 					const contentType = response.headers["content-type"];
@@ -143,6 +148,7 @@ const downloadImages = async (
 				} catch (error) {
 					console.log("access url error: " + urlMatche);
 					console.log(error);
+					errorUrls.push(urlMatche);
 				}
 			}
 		}
