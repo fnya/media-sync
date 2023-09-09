@@ -1,10 +1,38 @@
-import { App, Notice, requestUrl, Plugin } from "obsidian";
+import {
+	App,
+	DataAdapter,
+	Notice,
+	Plugin,
+	requestUrl,
+	TFile,
+	Vault,
+} from "obsidian";
 
-const RESOURCE_FOLDER_NAME = "resources";
 const ALLOW_FILE_EXTENSIONS = ["png", "jpg", "jpeg", "gif"];
 const START_MESSAGE = "Media Sync Start!!";
 const PROCESS_MESSAGE = "Media Sync in Process!!";
 const END_MESSAGE = "Media Sync End!!";
+const ERROR_MESSAGE = "Error Occurred!! Please retry.";
+
+export const SaveDirectory = {
+	Default: "_media-sync_resources",
+	AttachmentFolderPath: "attachmentFolderPath",
+	UserDefined: "resourceFolderName",
+};
+export type SaveDirectory = (typeof SaveDirectory)[keyof typeof SaveDirectory];
+
+export interface MediaSyncSettings {
+	setting: {
+		saveDirectory: SaveDirectory;
+		resourceFolderName: string;
+	};
+}
+export const DEFAULT_SETTINGS: MediaSyncSettings = {
+	setting: {
+		saveDirectory: SaveDirectory.Default,
+		resourceFolderName: "",
+	},
+};
 
 const getImageFilePrefix = (): string => {
 	const now = new Date();
@@ -25,46 +53,50 @@ const getRondomString = (): string => {
 		.padStart(5, "0");
 };
 
-export const saveImageFiles = async (app: App, id: string, plugin: Plugin) => {
-	const startNotice = new Notice(START_MESSAGE, 0);
-	console.log(START_MESSAGE);
+const getResorceFolderName = (
+	vault: Vault,
+	settings: MediaSyncSettings
+): string => {
+	let resourceFolderName: string | undefined;
 
-	const processNotice = new Notice(PROCESS_MESSAGE, 0);
-	console.log(PROCESS_MESSAGE);
-
-	let data: any;
-
-	// load data
-	try {
-		const dataJson = await plugin.loadData();
-		data = JSON.parse(dataJson);
-	} catch (error) {
-		console.log("load data error");
-		console.log(error);
+	if (settings.setting.saveDirectory === SaveDirectory.AttachmentFolderPath) {
+		resourceFolderName = vault.getConfig(SaveDirectory.AttachmentFolderPath);
+	} else if (settings.setting.saveDirectory === SaveDirectory.UserDefined) {
+		resourceFolderName = settings.setting.resourceFolderName;
 	}
 
-	if (!data) {
-		data = {};
-	}
-	if (!data.files) {
-		data.files = [];
+	if (!resourceFolderName) {
+		resourceFolderName = SaveDirectory.Default;
 	}
 
-	const files = app.vault.getMarkdownFiles();
+	return resourceFolderName!;
+};
 
-	const adapter = app.vault.adapter;
-
-	const resorceFolderName = `_${id}_${RESOURCE_FOLDER_NAME}`;
-
+const downloadImages = async (
+	data: any,
+	files: TFile[],
+	resorceFolderName: string,
+	adapter: DataAdapter,
+	notices: Notice[]
+) => {
 	if (!(await adapter.exists(resorceFolderName))) {
 		adapter.mkdir(resorceFolderName);
 	}
+
+	const totalCount = files.filter(
+		(file) => !data?.files?.some((f: any) => f === file.name)
+	)?.length;
+	let currentCount = 1;
 
 	for (const file of files) {
 		const isSkip = data?.files?.some((f: any) => f === file.name);
 		if (isSkip) {
 			continue;
 		}
+
+		notices.push(
+			new Notice(`${PROCESS_MESSAGE} (${currentCount}/${totalCount})`, 0)
+		);
 
 		let fileContent = await adapter.read(file!.path);
 		const prefix = getImageFilePrefix();
@@ -118,25 +150,65 @@ export const saveImageFiles = async (app: App, id: string, plugin: Plugin) => {
 		await adapter.write(file!.path, fileContent);
 
 		data.files.push(file.name);
+		currentCount++;
 	}
+};
 
-	// save data
-	const saveJson = JSON.stringify(data, null, 2);
+export const saveImageFiles = async (
+	app: App,
+	plugin: Plugin,
+	settings: MediaSyncSettings
+) => {
+	const notices: Notice[] = [];
+	notices.push(new Notice(START_MESSAGE, 0));
+	console.log(START_MESSAGE);
+
+	notices.push(new Notice(PROCESS_MESSAGE, 0));
+	console.log(PROCESS_MESSAGE);
+
+	let data: any;
+
 	try {
-		await plugin.saveData(saveJson);
+		const dataJson = await plugin.loadData();
+		data = JSON.parse(dataJson);
 	} catch (error) {
-		console.log("save data error");
+		console.log("load data error");
 		console.log(error);
 	}
 
-	const endNotice = new Notice(END_MESSAGE, 0);
+	if (!data) {
+		data = {};
+	}
+	if (!data.files) {
+		data.files = [];
+	}
+
+	const files = app.vault.getMarkdownFiles();
+	const resorceFolderName = getResorceFolderName(app.vault, settings);
+
+	await downloadImages(
+		data,
+		files,
+		resorceFolderName,
+		app.vault.adapter,
+		notices
+	);
+
+	try {
+		const saveData = JSON.stringify({ ...data, ...settings });
+		await plugin.saveData(saveData);
+	} catch (error) {
+		console.log("save data error");
+		console.log(error);
+		notices.push(new Notice(ERROR_MESSAGE, 0));
+	}
+
+	notices.push(new Notice(END_MESSAGE, 0));
 
 	// sleep 2 seconds
 	await new Promise((r) => setTimeout(r, 2000));
 
-	startNotice.hide();
-	processNotice.hide();
-	endNotice.hide();
+	notices.forEach((notice) => notice.hide());
 
 	console.log(END_MESSAGE);
 };
