@@ -79,8 +79,7 @@ const downloadImages = async (
 	data: any,
 	files: TFile[],
 	resorceFolderName: string,
-	adapter: DataAdapter,
-	notices: Notice[]
+	adapter: DataAdapter
 ) => {
 	if (!(await adapter.exists(resorceFolderName))) {
 		adapter.mkdir(resorceFolderName);
@@ -98,8 +97,9 @@ const downloadImages = async (
 			continue;
 		}
 
-		notices.push(
-			new Notice(`${PROCESS_MESSAGE} (${currentCount}/${totalCount})`, 0)
+		const currentNotice = new Notice(
+			`${PROCESS_MESSAGE} (${currentCount}/${totalCount})`,
+			0
 		);
 
 		let fileContent = await adapter.read(file!.path);
@@ -165,6 +165,7 @@ const downloadImages = async (
 		await adapter.write(file!.path, fileContent);
 
 		data.files.push(file.name);
+		currentNotice.hide();
 		currentCount++;
 	}
 };
@@ -201,13 +202,7 @@ export const saveImageFiles = async (
 	const files = app.vault.getMarkdownFiles();
 	const resorceFolderName = getResorceFolderName(app.vault, settings);
 
-	await downloadImages(
-		data,
-		files,
-		resorceFolderName,
-		app.vault.adapter,
-		notices
-	);
+	await downloadImages(data, files, resorceFolderName, app.vault.adapter);
 
 	try {
 		const saveData = JSON.stringify({ ...data, ...settings });
