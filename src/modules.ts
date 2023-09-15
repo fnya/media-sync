@@ -13,6 +13,7 @@ const START_MESSAGE = "Media Sync Start!!";
 const PROCESS_MESSAGE = "Media Sync in Process!!";
 const END_MESSAGE = "Media Sync End!!";
 const ERROR_MESSAGE = "Error Occurred!! Please retry.";
+const TWITTER_INTENT_URLS = ["https://twitter.com/intent/tweet"];
 
 export const SaveDirectory = {
 	Default: "_media-sync_resources",
@@ -115,6 +116,12 @@ const downloadImages = async (
 		if (urlMatches) {
 			for (const urlMatche of urlMatches) {
 				if (errorUrls.some((url) => url === urlMatche)) {
+					continue;
+				}
+				const isTwitterIntentUrl = TWITTER_INTENT_URLS.some((url) =>
+					urlMatche.startsWith(url)
+				);
+				if (isTwitterIntentUrl) {
 					continue;
 				}
 
