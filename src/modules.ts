@@ -39,7 +39,7 @@ const getImageFilePrefix = (): string => {
 	const now = new Date();
 
 	const year = now.getFullYear();
-	const month = String(now.getMonth() + 1).padStart(2, "0"); // 月は0から始まるため+1
+	const month = String(now.getMonth() + 1).padStart(2, "0"); // +1 because the month begins at 0
 	const day = String(now.getDate()).padStart(2, "0");
 	const hours = String(now.getHours()).padStart(2, "0");
 	const minutes = String(now.getMinutes()).padStart(2, "0");
@@ -72,7 +72,7 @@ const getResorceFolderName = (
 		resourceFolderName = SaveDirectory.Default;
 	}
 
-	return resourceFolderName!;
+	return resourceFolderName;
 };
 
 const downloadImages = async (
@@ -102,7 +102,7 @@ const downloadImages = async (
 			0
 		);
 
-		let fileContent = await adapter.read(file!.path);
+		let fileContent = await adapter.read(file.path);
 		const prefix = getImageFilePrefix();
 
 		const currentFileFolderPath = `${resorceFolderName}/${prefix}`;
@@ -111,7 +111,7 @@ const downloadImages = async (
 			adapter.mkdir(currentFileFolderPath);
 		}
 
-		const urlMatches = fileContent.match(/https?:\/\/([\w!\?/\-_=\.&%;:,])+/g);
+		const urlMatches = fileContent.match(/https?:\/\/([\w!?/\-_=.&%;:,])+/g);
 
 		if (urlMatches) {
 			for (const urlMatche of urlMatches) {
@@ -162,7 +162,7 @@ const downloadImages = async (
 			}
 		}
 
-		await adapter.write(file!.path, fileContent);
+		await adapter.write(file.path, fileContent);
 
 		data.files.push(file.name);
 		currentNotice.hide();
