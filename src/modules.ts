@@ -15,6 +15,7 @@ const END_MESSAGE = "Media Sync End!!";
 const ERROR_MESSAGE = "Error Occurred!! Please retry.";
 const SKIP_URLS = [
 	"https://twitter.com/intent/tweet",
+	"https://twitter.com/share",
 	"https://search.yahoo.co.jp/search",
 ];
 
