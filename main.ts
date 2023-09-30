@@ -1,9 +1,17 @@
-import { Plugin, PluginSettingTab, App, Setting } from "obsidian";
 import {
-	saveImageFiles,
-	MediaSyncSettings,
+	App,
+	Notice,
+	Plugin,
+	PluginSettingTab,
+	Setting,
+	TFile,
+	TFolder,
+} from "obsidian";
+import {
 	DEFAULT_SETTINGS,
+	MediaSyncSettings,
 	SaveDirectory,
+	saveImageFiles,
 } from "src/modules";
 
 export default class MediaSyncPlugin extends Plugin {
@@ -12,11 +20,32 @@ export default class MediaSyncPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.addRibbonIcon("leaf", "Media Sync", (evt: MouseEvent) => {
+		this.addRibbonIcon("leaf", "Media sync", (evt: MouseEvent) => {
 			saveImageFiles(this.app, this, this.settings);
 		});
 
 		this.addSettingTab(new MediaSyncSettingTab(this.app, this));
+
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, file) => {
+				menu.addItem((item) => {
+					item.setTitle("Media sync").onClick(async () => {
+						if (file instanceof TFolder) {
+							new Notice("Media sync does not support folders.");
+							return;
+						}
+
+						saveImageFiles(
+							this.app,
+							this,
+							this.settings,
+							[file as TFile],
+							false
+						);
+					});
+				});
+			})
+		);
 	}
 
 	onunload() {}

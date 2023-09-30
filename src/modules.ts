@@ -83,21 +83,28 @@ const downloadImages = async (
 	data: any,
 	files: TFile[],
 	resorceFolderName: string,
-	adapter: DataAdapter
+	adapter: DataAdapter,
+	useCache: boolean = true
 ) => {
 	if (!(await adapter.exists(resorceFolderName))) {
 		adapter.mkdir(resorceFolderName);
 	}
 
-	const totalCount = files.filter(
-		(file) => !data?.files?.some((f: any) => f === file.name)
-	)?.length;
+	let totalCount: number;
+	if (useCache) {
+		totalCount = files.filter(
+			(file) => !data?.files?.some((f: any) => f === file.name)
+		)?.length;
+	} else {
+		totalCount = files.length;
+	}
+
 	let currentCount = 1;
 	const errorUrls: string[] = [];
 
 	for (const file of files) {
 		const isSkip = data?.files?.some((f: any) => f === file.name);
-		if (isSkip) {
+		if (isSkip && useCache) {
 			continue;
 		}
 
@@ -177,7 +184,9 @@ const downloadImages = async (
 export const saveImageFiles = async (
 	app: App,
 	plugin: Plugin,
-	settings: MediaSyncSettings
+	settings: MediaSyncSettings,
+	selectFiles: TFile[] = [],
+	useCache: boolean = true
 ) => {
 	const notices: Notice[] = [];
 	notices.push(new Notice(START_MESSAGE, 0));
@@ -203,10 +212,22 @@ export const saveImageFiles = async (
 		data.files = [];
 	}
 
-	const files = app.vault.getMarkdownFiles();
+	let files: TFile[] = [];
+	if (selectFiles.length > 0) {
+		files = selectFiles;
+	} else {
+		files = app.vault.getMarkdownFiles();
+	}
+
 	const resorceFolderName = getResorceFolderName(app.vault, settings);
 
-	await downloadImages(data, files, resorceFolderName, app.vault.adapter);
+	await downloadImages(
+		data,
+		files,
+		resorceFolderName,
+		app.vault.adapter,
+		useCache
+	);
 
 	try {
 		const saveData = JSON.stringify({ ...data, ...settings });
