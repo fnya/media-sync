@@ -8,7 +8,7 @@ import {
 	Vault,
 } from "obsidian";
 
-const ALLOW_FILE_EXTENSIONS = ["png", "jpg", "jpeg", "gif"];
+const ALLOW_FILE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "pdf"];
 const START_MESSAGE = "Media Sync Start!!";
 const PROCESS_MESSAGE = "Media Sync in Process!!";
 const END_MESSAGE = "Media Sync End!!";
@@ -39,7 +39,7 @@ export const DEFAULT_SETTINGS: MediaSyncSettings = {
 	},
 };
 
-const getImageFilePrefix = (): string => {
+const getFilePrefix = (): string => {
 	const now = new Date();
 
 	const year = now.getFullYear();
@@ -79,7 +79,7 @@ const getResorceFolderName = (
 	return resourceFolderName;
 };
 
-const downloadImages = async (
+const downloadFiles = async (
 	data: any,
 	files: TFile[],
 	resorceFolderName: string,
@@ -114,7 +114,7 @@ const downloadImages = async (
 		);
 
 		let fileContent = await adapter.read(file.path);
-		const prefix = getImageFilePrefix();
+		const prefix = getFilePrefix();
 
 		const currentFileFolderPath = `${resorceFolderName}/${prefix}`;
 
@@ -129,10 +129,8 @@ const downloadImages = async (
 				if (errorUrls.some((url) => url === urlMatche)) {
 					continue;
 				}
-				const isTwitterIntentUrl = SKIP_URLS.some((url) =>
-					urlMatche.startsWith(url)
-				);
-				if (isTwitterIntentUrl) {
+				const hasSkipUrls = SKIP_URLS.some((url) => urlMatche.startsWith(url));
+				if (hasSkipUrls) {
 					continue;
 				}
 
@@ -140,7 +138,10 @@ const downloadImages = async (
 					const response = await requestUrl(urlMatche);
 					const contentType = response.headers["content-type"];
 
-					if (contentType.startsWith("image")) {
+					if (
+						contentType.startsWith("image") ||
+						contentType === "application/pdf"
+					) {
 						const extension = contentType.split("/")[1];
 						const isAllowExtension = ALLOW_FILE_EXTENSIONS.some(
 							(ext) => extension.toLowerCase() === ext
@@ -181,7 +182,7 @@ const downloadImages = async (
 	}
 };
 
-export const saveImageFiles = async (
+export const saveFiles = async (
 	app: App,
 	plugin: Plugin,
 	settings: MediaSyncSettings,
@@ -189,10 +190,10 @@ export const saveImageFiles = async (
 	useCache: boolean = true
 ) => {
 	const notices: Notice[] = [];
-	notices.push(new Notice(START_MESSAGE, 0));
+	notices.push(new Notice(START_MESSAGE, 2000));
 	console.log(START_MESSAGE);
 
-	notices.push(new Notice(PROCESS_MESSAGE, 0));
+	notices.push(new Notice(PROCESS_MESSAGE, 2000));
 	console.log(PROCESS_MESSAGE);
 
 	let data: any;
@@ -221,7 +222,7 @@ export const saveImageFiles = async (
 
 	const resorceFolderName = getResorceFolderName(app.vault, settings);
 
-	await downloadImages(
+	await downloadFiles(
 		data,
 		files,
 		resorceFolderName,

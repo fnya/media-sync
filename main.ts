@@ -11,7 +11,7 @@ import {
 	DEFAULT_SETTINGS,
 	MediaSyncSettings,
 	SaveDirectory,
-	saveImageFiles,
+	saveFiles,
 } from "src/modules";
 
 export default class MediaSyncPlugin extends Plugin {
@@ -21,7 +21,7 @@ export default class MediaSyncPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.addRibbonIcon("leaf", "Media sync", (evt: MouseEvent) => {
-			saveImageFiles(this.app, this, this.settings);
+			saveFiles(this.app, this, this.settings);
 		});
 
 		this.addSettingTab(new MediaSyncSettingTab(this.app, this));
@@ -35,13 +35,7 @@ export default class MediaSyncPlugin extends Plugin {
 							return;
 						}
 
-						saveImageFiles(
-							this.app,
-							this,
-							this.settings,
-							[file as TFile],
-							false
-						);
+						saveFiles(this.app, this, this.settings, [file as TFile], false);
 					});
 				});
 			})
@@ -88,7 +82,7 @@ class MediaSyncSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Folder to store images")
-			.setDesc("Specify a folder to store images.")
+			.setDesc("Specify a folder to store media files.")
 			.addDropdown((dropdown) => {
 				dropdown
 					.addOption(SaveDirectory.Default, "Default")
@@ -119,7 +113,7 @@ class MediaSyncSettingTab extends PluginSettingTab {
 
 		const customFolderSetting = new Setting(containerEl)
 			.setName("Custom folder name")
-			.setDesc("Specify folder name  where the images will be stored.")
+			.setDesc("Specify folder name  where the media files will be stored.")
 			.addText((text) => {
 				text
 					.setPlaceholder("Custom folder name")
