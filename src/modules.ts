@@ -118,10 +118,6 @@ const downloadFiles = async (
 
 		const currentFileFolderPath = `${resorceFolderName}/${prefix}`;
 
-		if (!(await adapter.exists(currentFileFolderPath))) {
-			adapter.mkdir(currentFileFolderPath);
-		}
-
 		const urlMatches = fileContent.match(/https?:\/\/([\w!?/\-_=.&%;:,])+/g);
 
 		if (urlMatches) {
@@ -142,6 +138,10 @@ const downloadFiles = async (
 						contentType.startsWith("image") ||
 						contentType === "application/pdf"
 					) {
+						if (!(await adapter.exists(currentFileFolderPath))) {
+							adapter.mkdir(currentFileFolderPath);
+						}
+
 						const extension = contentType.split("/")[1];
 						const isAllowExtension = ALLOW_FILE_EXTENSIONS.some(
 							(ext) => extension.toLowerCase() === ext
