@@ -50,19 +50,26 @@ export default class MediaSyncPlugin extends Plugin {
 		try {
 			data = await this.loadData();
 		} catch (error) {
-			console.log("load data error");
-			console.log(error);
+			console.error("load data error");
+			console.error(error);
 		}
 
 		try {
 			const loadData = JSON.parse(data);
+
 			if (loadData.setting) {
+				if (!this.settings?.setting) {
+					this.settings = DEFAULT_SETTINGS;
+				}
 				this.settings.setting = loadData.setting;
 			} else {
 				this.settings = DEFAULT_SETTINGS;
+				console.log(this.settings);
 			}
 		} catch (error) {
 			this.settings = DEFAULT_SETTINGS;
+			console.error("parse data error");
+			console.error(error);
 		}
 	}
 }
@@ -132,8 +139,8 @@ class MediaSyncSettingTab extends PluginSettingTab {
 			try {
 				data = await this.plugin.loadData();
 			} catch (error) {
-				console.log("load data error");
-				console.log(error);
+				console.error("load data error");
+				console.error(error);
 			}
 
 			let saveData: any;
@@ -150,8 +157,8 @@ class MediaSyncSettingTab extends PluginSettingTab {
 
 			await this.plugin.saveData(saveData);
 		} catch (error) {
-			console.log("save data error");
-			console.log(error);
+			console.error("save data error");
+			console.error(error);
 		}
 	}
 }
