@@ -6,7 +6,7 @@
 
 **Caution!**
 
-When processing large numbers of files, please make backups before executing.
+**When processing large numbers of files, please make backups before executing.**
 
 Click the `Media sync` icon in the left sidebar.
 
