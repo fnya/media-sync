@@ -4,6 +4,10 @@
 
 ## How to use
 
+**Caution!**
+
+When processing large numbers of files, please make backups before executing.
+
 Click the `Media sync` icon in the left sidebar.
 
 <img src="resources/image01.png" width="200">
