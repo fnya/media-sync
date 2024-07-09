@@ -164,7 +164,9 @@ const downloadFiles = async (
 						}
 
 						fileContent = fileContent.replace(urlMatche, filePath);
+						let fileNotePath = `${filePath}.md`;
 						await adapter.writeBinary(filePath, response.arrayBuffer);
+						await adapter.write(fileNotePath, `![[${filePath}]] From note: [[${file.path}]] Original url: ${urlMatche}`);
 					}
 				} catch (error) {
 					console.log("access url error: " + urlMatche);
