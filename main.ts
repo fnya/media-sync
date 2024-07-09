@@ -29,7 +29,7 @@ export default class MediaSyncPlugin extends Plugin {
 		this.addSettingTab(new MediaSyncSettingTab(this.app, this));
 		this.addCommand({
 			id: 'media-sync-now',
-			name: 'Media sync: Sync This File',
+			name: 'Sync This File',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				
 				saveFiles(this.app, this, this.settings, [view.file as TFile], false);
