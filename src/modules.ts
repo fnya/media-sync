@@ -49,7 +49,7 @@ const getFilePrefix = (): string => {
 	const minutes = String(now.getMinutes()).padStart(2, "0");
 	const seconds = String(now.getSeconds()).padStart(2, "0");
 
-	return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+	return `${year}/${month}/${day}/${hours}${minutes}${seconds}`;
 };
 
 const getRondomString = (): string => {
@@ -147,7 +147,7 @@ const downloadFiles = async (
 							(ext) => extension.toLowerCase() === ext
 						);
 
-						let filePath = `${currentFileFolderPath}/${prefix}_${getRondomString()}`;
+						let filePath = `${currentFileFolderPath}/${getRondomString()}`;
 						if (isAllowExtension) {
 							filePath = `${filePath}.${extension}`;
 						} else {
@@ -166,7 +166,10 @@ const downloadFiles = async (
 						fileContent = fileContent.replace(urlMatche, filePath);
 						let fileNotePath = `${filePath}.md`;
 						await adapter.writeBinary(filePath, response.arrayBuffer);
-						await adapter.write(fileNotePath, `![[${filePath}]] From note: [[${file.path}]] Original url: ${urlMatche}`);
+						await adapter.write(
+							fileNotePath,
+							`![[${filePath}]] From note: [[${file.path}]] Original url: ${urlMatche}`
+						);
 					}
 				} catch (error) {
 					console.log("access url error: " + urlMatche);

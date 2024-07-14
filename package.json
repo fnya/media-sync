@@ -1,6 +1,6 @@
 {
 	"name": "media-sync",
-	"version": "0.0.14",
+	"version": "0.0.15",
 	"description": "Downloads media files(eg. images, PDFs) from the URLs in documents and displays the content.",
 	"main": "main.js",
 	"scripts": {
