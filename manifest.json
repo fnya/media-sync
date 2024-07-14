@@ -1,7 +1,7 @@
 {
 	"id": "media-sync",
 	"name": "Media Sync",
-	"version": "0.0.13",
+	"version": "0.0.14",
 	"minAppVersion": "0.0.0",
 	"description": "Downloads media files(eg. images, PDFs) from the URLs in documents and displays the content.",
 	"author": "fnya",
